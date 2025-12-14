@@ -46,7 +46,18 @@ The Docker Compose setup includes:
 
 ### Configuration
 
-Environment variables can be customized in the `docker-compose.yml` file or by using a `.env` file.
+Environment variables can be customized by creating a `.env` file:
+
+```bash
+cp .env.example .env
+# Edit .env with your preferred values
+```
+
+Key environment variables:
+- `POSTGRES_USER`: Database username (default: user)
+- `POSTGRES_PASSWORD`: Database password (default: password) ⚠️ **Change in production**
+- `POSTGRES_DB`: Database name (default: asidb)
+- `NODE_ENV`: Application environment (default: production)
 
 ### Data Persistence
 

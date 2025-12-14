@@ -1,0 +1,72 @@
+version: "3.8"
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - TZ=Europe/Berlin
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=n8n-db
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=${N8N_DB_NAME:-n8ndb}
+      - DB_POSTGRESDB_USER=${N8N_DB_USER:-n8n}
+      - DB_POSTGRESDB_PASSWORD=${N8N_DB_PASSWORD:-change_me}
+      - N8N_DIAGNOSTICS_ENABLED=false
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      n8n-db:
+        condition: service_healthy
+    networks:
+      - asi
+
+  n8n-db:
+    image: postgres:16-alpine
+    container_name: n8n-db
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Berlin
+      - POSTGRES_DB=${N8N_DB_NAME:-n8ndb}
+      - POSTGRES_USER=${N8N_DB_USER:-n8n}
+      - POSTGRES_PASSWORD=${N8N_DB_PASSWORD:-change_me}
+    volumes:
+      - n8n_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${N8N_DB_USER:-n8n} -d ${N8N_DB_NAME:-n8ndb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - asi
+
+  youtrack:
+    image: jetbrains/youtrack:2025.3.112453
+    container_name: youtrack
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - TZ=Europe/Berlin
+    volumes:
+      - youtrack_data:/opt/youtrack/data
+      - youtrack_conf:/opt/youtrack/conf
+      - youtrack_logs:/opt/youtrack/logs
+      - youtrack_backups:/opt/youtrack/backups
+    networks:
+      - asi
+
+networks:
+  asi:
+    driver: bridge
+
+volumes:
+  n8n_data:
+  n8n_db_data:
+  youtrack_data:
+  youtrack_conf:
+  youtrack_logs:
+  youtrack_backups:

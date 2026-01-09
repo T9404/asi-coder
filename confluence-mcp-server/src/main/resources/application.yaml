@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: confluence-mcp-server
+  threads:
+    virtual:
+      enabled: true
+  ai:
+    mcp:
+      server:
+        name: confluence-mcp-server
+        type: sync
+        protocol: sse
+        sse-endpoint: /api/v1/sse
+        sse-message-endpoint: /api/v1/sse/messages
+        request-timeout: 30s
+        instructions: >
+          Drive Confluence via MCP: create, update, and manage pages, blog posts, comments, and attachments.
+
+logging:
+  level:
+    io.modelcontextprotocol: TRACE
+    org.springframework.ai.mcp: TRACE
+
+confluence:
+  base-url: ${CONFLUENCE_URL:http://localhost:8090/rest/api}
+  username: ${CONFLUENCE_USERNAME}
+  api-token: ${CONFLUENCE_API_TOKEN}
+
+server:
+  port: ${SERVER_PORT:8084}

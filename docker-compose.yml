@@ -58,6 +58,117 @@ services:
       - youtrack_backups:/opt/youtrack/backups
     networks:
       - asi
+  confluence:
+    container_name: confluence
+    image: atlassian/confluence:9.2.4
+    depends_on:
+      - confluence-db
+    ports:
+      - "8090:8090"
+    volumes:
+      - confluence_db_data:/var/confluence
+    restart: always
+    networks:
+      - asi
+
+  confluence-db:
+    container_name: confluence-db
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=${CONFLUENCE_DB_NAME:-confluence}
+      - POSTGRES_PASSWORD=${CONFLUENCE_DB_PASSWORD:-change_me}
+      - POSTGRES_DB=${CONFLUENCE_DB_NAME:-confluence}
+    volumes:
+      - confluence_db_data:/var/lib/postgresql/data
+    restart: always
+    ports:
+      - "5433:5432"
+    networks:
+      - asi
+
+  confluence-mcp-server:
+    container_name: confluence-mcp-server
+    build:
+      dockerfile: Dockerfile
+      context: ./confluence-mcp-server
+      network: host
+    environment:
+      - CONFLUENCE_URL=http://confluence:8090/rest/api
+      - CONFLUENCE_USERNAME=${CONFLUENCE_USERNAME}
+      - CONFLUENCE_API_TOKEN=${CONFLUENCE_API_TOKEN}
+      - SERVER_PORT=8084
+    restart: always
+    ports:
+      - "8084:8084"
+    depends_on:
+      - confluence
+    networks:
+      - asi
+
+  documentation-agent-client:
+    container_name: documentation-agent-client
+    build:
+      dockerfile: Dockerfile
+      context: ./documentation-agent-client
+      network: host
+    environment:
+      - PM_MCP_SERVER_URL=http://confluence-mcp-server:8084
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SERVER_PORT=9095
+    restart: always
+    ports:
+      - "9095:9095"
+    depends_on:
+      - confluence-mcp-server
+    networks:
+      - asi
+
+  project-manager-client:
+    container_name: project-manager-client
+    build:
+      dockerfile: Dockerfile
+      context: ./project-manager-client
+      network: host
+    environment:
+      - YOUTRACK_MCP_SERVER_URL=http://youtrack-mcp-server:8082
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SERVER_PORT=9091
+    restart: always
+    ports:
+      - "9091:9091"
+    depends_on:
+      - youtrack-mcp-server
+    networks:
+      - asi
+
+  youtrack-mcp-server:
+    container_name: youtrack-mcp-server
+    build:
+      dockerfile: Dockerfile
+      context: ./youtrack-mcp-server
+      network: host
+    environment:
+      - YOUTRACK_URL=http://youtrack:8080
+      - YOUTRACK_TOKEN=${YOUTRACK_TOKEN}
+      - SERVER_PORT=8082
+    restart: always
+    ports:
+      - "8082:8082"
+    depends_on:
+      - youtrack
+    networks:
+      - asi
+  github-mcp-server:
+    image: ghcr.io/github/github-mcp-server:latest
+    container_name: github-mcp
+    environment:
+      GITHUB_PERSONAL_ACCESS_TOKEN: ${GITHUB_PERSONAL_ACCESS_TOKEN}
+      GITHUB_TOOLS: list_pull_requests,pull_request_read,pull_request_review_write,get_commit,get_file_contents,list_branches,search_code,search_repositories
+    restart: always
+    ports:
+      - "8086:8086"
+    networks:
+      - asi
 
 networks:
   asi:
@@ -70,3 +181,4 @@ volumes:
   youtrack_conf:
   youtrack_logs:
   youtrack_backups:
+  confluence_db_data:

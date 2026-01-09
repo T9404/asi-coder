@@ -1,0 +1,41 @@
+spring:
+  application:
+    name: youtrack-mcp-server
+  ai:
+    mcp:
+      server:
+        name: youtrack-mcp-server
+        type: sync
+        protocol: sse
+        sse-endpoint: /api/v1/sse
+        sse-message-endpoint: /api/v1/sse/messages
+        request-timeout: 30s
+        instructions: >
+          Drive YouTrack via MCP: search issues, inspect project field schemas, create/update issues and drafts,
+          manage comments, tags, links, saved searches, and browse projects/users.
+
+logging:
+  level:
+    io.modelcontextprotocol: TRACE
+    org.springframework.ai.mcp: TRACE
+
+youtrack:
+  base-url: ${YOUTRACK_URL:http://localhost:8080}
+  token: ${YOUTRACK_TOKEN}
+
+server:
+  port: ${SERVER_PORT:8082}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when_authorized
+  metrics:
+    tags:
+      application: youtrack-mcp-server

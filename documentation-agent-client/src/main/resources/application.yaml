@@ -1,25 +1,22 @@
 spring:
   application:
-    name: project-manager-client
-  threads:
-    virtual:
-      enabled: true
+    name: documentation-agent-client
   ai:
     openai:
       api-key: ${OPENAI_API_KEY}
       chat:
         options:
-          model: gpt-4o
+          model: gpt-5
           temperature: 1
     mcp:
       client:
-        name: project-manager-client
+        name: documentation-agent-client
         request-timeout: 30s
         type: sync
         sse:
           connections:
-            yourack-mcp-server:
-              url: ${YOUTRACK_MCP_SERVER_URL:http://localhost:8082}
+            confluence-mcp-server:
+              url: ${CONFLUENCE_MCP_SERVER_URL:http://localhost:8084}
               sse-endpoint: /api/v1/sse
       server:
         name: confluence-mcp-server
@@ -28,23 +25,9 @@ spring:
         sse-message-endpoint: /api/v1/mcp/message
 
 server:
-  port: ${SERVER_PORT:9091}
+  port: ${SERVER_PORT:9095}
 
 logging:
   level:
     io.modelcontextprotocol: TRACE
     org.springframework.ai.mcp: TRACE
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,prometheus
-  endpoint:
-    health:
-      probes:
-        enabled: true
-      show-details: when_authorized
-  metrics:
-    tags:
-      application: project-manager-client

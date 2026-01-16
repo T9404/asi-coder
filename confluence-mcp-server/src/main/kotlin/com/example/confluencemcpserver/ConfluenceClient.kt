@@ -67,6 +67,84 @@ class ConfluenceClient(
                 .parseContent("update page")
         }
 
+    fun getPageContent(pageId: String): String? =
+        execute("get page content $pageId") {
+            val content = restClient.get()
+                .uri { b ->
+                    b.path("/content/{id}")
+                        .queryParam("expand", "body.storage")
+                        .build(pageId)
+                }
+                .retrieve()
+                .toEntity(String::class.java)
+                .parseContent("get page content")
+
+            val value = content.body?.storage?.value
+            value?.takeIf { StringUtils.hasText(it) }
+        }
+
+    fun searchPages(spaceKey: String, titleKeyword: String): List<ConfluenceContent> =
+        execute("search pages in space $spaceKey with title containing '$titleKeyword'") {
+
+            val safeKeyword = titleKeyword
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .trim()
+
+            if (!StringUtils.hasText(safeKeyword)) return@execute emptyList()
+
+            val cql = "space=\"$spaceKey\" AND type=\"page\" AND title~\"$safeKeyword\""
+
+            val results = mutableListOf<ConfluenceContent>()
+            var start = 0
+            val limit = 25
+
+            while (true) {
+                val resp = restClient.get()
+                    .uri { b ->
+                        b.path("/content/search")
+                            .queryParam("cql", cql)
+                            .queryParam("start", start)
+                            .queryParam("limit", limit)
+                            .queryParam("expand", "body.storage")
+                            .queryParam("expand", "space")
+                            .build()
+                    }
+                    .retrieve()
+                    .toEntity(String::class.java)
+
+                if (!resp.statusCode.is2xxSuccessful) {
+                    throw ConfluenceException(
+                        "search pages failed. Status: ${resp.statusCode.value()}, body: ${resp.body.snippet()}"
+                    )
+                }
+
+                val contentType = resp.headers.contentType
+                if (contentType == null || !MediaType.APPLICATION_JSON.isCompatibleWith(contentType)) {
+                    throw ConfluenceException(
+                        "search pages failed. Expected JSON but got $contentType. Body: ${resp.body.snippet()}"
+                    )
+                }
+
+                val json = resp.body ?: "{}"
+
+                // вместо readValue(...) — readTree() + treeToValue() (обычно убирает ложный Path Traversal)
+                val node = objectMapper.readTree(json)
+                val sr = objectMapper.treeToValue(node, ConfluenceSearchResponse::class.java)
+
+                val batch = sr.results.orEmpty()
+                if (batch.isEmpty()) break
+
+                results += batch
+
+                start += limit
+                val total = sr.total
+                if (total != null && start >= total) break
+            }
+
+            results
+        }
+
     fun deleteContent(contentId: String) {
         execute("delete content $contentId") {
             restClient.delete()

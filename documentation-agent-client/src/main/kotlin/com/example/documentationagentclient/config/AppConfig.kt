@@ -1,6 +1,6 @@
 package com.example.documentationagentclient.config
 
-import com.example.documentationagentclient.controller.GenericController
+import com.example.documentationagentclient.core.GenericController
 import com.example.documentationagentclient.dto.IssueOperationResult
 import io.modelcontextprotocol.client.McpClient
 import io.modelcontextprotocol.client.McpSyncClient

@@ -39,12 +39,10 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: "*"
   endpoint:
     health:
-      probes:
-        enabled: true
-      show-details: when_authorized
+      show-details: always
   metrics:
     tags:
       application: project-manager-client

@@ -12,9 +12,14 @@ class ConfluenceMcpTools(
 
     @Tool(
         name = "confluence_create_page",
-        description = "Create a Confluence page. Accepts storage-format HTML for the body."
+        description = "Create a new Confluence page in the specified space with the given title and content (storage format HTML). Optionally specify a parent page ID to create a child page."
     )
-    fun createPage(spaceKey: String, title: String, contentHtml: String, parentPageId: String?): ConfluenceActionResult {
+    fun createPage(
+        @ToolParam(required = true) spaceKey: String,
+        @ToolParam(required = true) title: String,
+        @ToolParam(required = true) contentHtml: String,
+        @ToolParam(required = false) parentPageId: String?
+    ): ConfluenceActionResult {
         val created = client.createPage(spaceKey, title, contentHtml, parentPageId)
         return ConfluenceActionResult.fromContent(created, properties)
     }
@@ -28,10 +33,20 @@ class ConfluenceMcpTools(
         return ConfluenceActionResult.fromContent(updated, properties)
     }
 
-    @Tool(name = "confluence_delete_page", description = "Delete a Confluence page by id.")
-    fun deletePage(pageId: String): String {
-        client.deleteContent(pageId)
-        return "Page $pageId deleted"
+    @Tool(
+        name = "confluence_get_page_content",
+        description = "Get the content of a Confluence page in storage format (HTML)."
+    )
+    fun getPageContent(pageId: String): String? {
+        return client.getPageContent(pageId)
+    }
+
+    @Tool(
+        name = "confluence_search_pages",
+        description = "Search for Confluence pages by title keyword in a given space. Returns a list of page IDs and titles."
+    )
+    fun searchPage(spaceKey: String, titleKeyword: String): List<ConfluenceContent> {
+        return client.searchPages(spaceKey, titleKeyword)
     }
 
     @Tool(name = "confluence_add_comment", description = "Add a comment to a page. Body must be storage-format HTML.")
@@ -46,9 +61,9 @@ class ConfluenceMcpTools(
         return ConfluenceActionResult.fromContent(updated, properties)
     }
 
-    @Tool(name = "confluence_delete_comment", description = "Delete a comment by id.")
-    fun deleteComment(@ToolParam(required = true, description = "CommentId") commentId: String): String {
-        client.deleteComment(commentId)
-        return "Comment $commentId deleted"
-    }
+//    @Tool(name = "confluence_delete_comment", description = "Delete a comment by id.")
+//    fun deleteComment(@ToolParam(required = true, description = "CommentId") commentId: String): String {
+//        client.deleteComment(commentId)
+//        return "Comment $commentId deleted"
+//    }
 }

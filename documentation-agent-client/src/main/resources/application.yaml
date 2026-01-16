@@ -2,6 +2,8 @@ spring:
   application:
     name: documentation-agent-client
   ai:
+    model:
+      image: openai
     openai:
       api-key: ${OPENAI_API_KEY}
       chat:
@@ -11,7 +13,7 @@ spring:
     mcp:
       client:
         name: documentation-agent-client
-        request-timeout: 30s
+        request-timeout: 120s
         type: sync
         sse:
           connections:

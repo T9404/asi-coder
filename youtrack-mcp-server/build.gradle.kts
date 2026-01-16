@@ -32,6 +32,7 @@ dependencies {
     implementation("org.springframework.ai:spring-ai-starter-mcp-server")
     implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc")
     implementation("org.springaicommunity:mcp-annotations")
+    implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.apache.httpcomponents.client5:httpclient5")
     compileOnly("org.projectlombok:lombok")

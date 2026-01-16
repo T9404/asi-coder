@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: project-manager-client
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - project-manager-client:9091
+  - job_name: youtrack-mcp-server
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - youtrack-mcp-server:8082

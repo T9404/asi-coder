@@ -21,7 +21,9 @@ spring:
               url: ${CONFLUENCE_MCP_SERVER_URL:http://localhost:8084}
               sse-endpoint: /api/v1/sse
       server:
-        name: confluence-mcp-server
+        enabled: true
+        protocol: SSE
+        name: documentation-agent-server
         instructions: Manage Confluence content on the local instance. Always send storage-format HTML in bodies.
         sse-endpoint: /api/v1/sse
         sse-message-endpoint: /api/v1/mcp/message

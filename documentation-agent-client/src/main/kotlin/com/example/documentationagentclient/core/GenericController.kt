@@ -5,10 +5,10 @@ import org.springframework.ai.image.ImageResponse
 import org.springframework.ai.openai.OpenAiImageModel
 import org.springframework.ai.tool.annotation.Tool
 import org.springframework.ai.tool.annotation.ToolParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.stereotype.Component
 
 
-@RestController
+@Component
 class GenericController(
     private val confluenceSaveService: ConfluenceSaveService,
     private val openaiImageModel: OpenAiImageModel,

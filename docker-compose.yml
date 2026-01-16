@@ -112,7 +112,7 @@ services:
       context: ./documentation-agent-client
       network: host
     environment:
-      - PM_MCP_SERVER_URL=http://confluence-mcp-server:8084
+      - CONFLUENCE_MCP_SERVER_URL=http://confluence-mcp-server:8084
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - SERVER_PORT=9095
     restart: always

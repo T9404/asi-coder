@@ -1,0 +1,147 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "da86aeec-2c16-4097-ade4-02a217054fc1",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "serverTransport": "sse",
+        "endpointUrl": "http://project-manager-client:9091/api/v1/sse",
+        "tool": {
+          "__rl": true,
+          "value": "issue_operation",
+          "mode": "list",
+          "cachedResultName": "issue_operation"
+        },
+        "parameters": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "request": "change status to Test",
+            "issueId": "test-11"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "issueId",
+              "displayName": "issueId",
+              "defaultMatch": false,
+              "required": true,
+              "display": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "request",
+              "displayName": "request",
+              "defaultMatch": false,
+              "required": true,
+              "display": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "845187ec-e5d2-4dac-a79c-3725fd8fecbe",
+      "name": "MCP Client"
+    },
+    {
+      "parameters": {
+        "serverTransport": "sse",
+        "endpointUrl": "http://documentation-agent-client:9095/api/v1/sse",
+        "tool": {
+          "__rl": true,
+          "value": "generate_image",
+          "mode": "list",
+          "cachedResultName": "generate_image"
+        },
+        "parameters": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "issueId": "test-15",
+            "description": "public class HelloWorld { \tpublic static void main(String[] args) { \t\tSystem.out.println(\"Hello World!\"); \t} }"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "issueId",
+              "displayName": "issueId",
+              "defaultMatch": false,
+              "required": true,
+              "display": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "defaultMatch": false,
+              "required": true,
+              "display": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClient",
+      "typeVersion": 1,
+      "position": [
+        208,
+        272
+      ],
+      "id": "9785cf3a-a22a-4909-8626-e3ba8f57e114",
+      "name": "MCP Client1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "MCP Client",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MCP Client1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9b9a7ac0-c99d-45ba-9fea-f3bcb9c7bb00",
+  "meta": {
+    "instanceId": "c43a3f49238af9c4e700a167818909cdd21947ccb25f6e6ea44b7da99d3093b7"
+  },
+  "id": "WPlaErh1SNbkVcp2",
+  "tags": []
+}

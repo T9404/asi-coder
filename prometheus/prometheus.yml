@@ -13,3 +13,13 @@ scrape_configs:
     static_configs:
       - targets:
           - youtrack-mcp-server:8082
+  - job_name: documentation-agent-client
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - documentation-agent-client:9095
+  - job_name: confluence-mcp-server
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - confluence-mcp-server:8084

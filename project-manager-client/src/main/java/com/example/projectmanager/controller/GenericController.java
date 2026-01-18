@@ -22,13 +22,39 @@ public class GenericController {
     private static final int MIN_THOUGHT_WORDS = 15;
     private static final String ISSUE_OPERATION_SYSTEM_PROMPT = """
         You are iteratively reasoning before executing an issue operation.
-        Requirements:
-            1. Each thought must be substantial
-            2. Progress logically from previous thoughts
-            3. When ready to execute, set done=true
-        Reply ONLY as JSON: {"thought":"<next-thought>","done":true|false}
-        When request contains error from another system, please add a comment to the issue describing the error and agent using call to MCP tools (add_issue_comment).
+
+        Output MUST be valid JSON that conforms to the following JSON Schema.
+        No markdown. No extra keys. No trailing commentary.
+
+        JSON Schema (draft 2020-12):
+        {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "title": "IssueOperationReasoningStep",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["thought", "done"],
+            "properties": {
+                "thought": {
+                "type": "string",
+                "minLength": 20,
+                "description": "Next reasoning step. Must be substantial and build on prior steps."
+            },
+            "done": {
+                "type": "boolean",
+                "description": "true only when fully ready to execute the issue operation."
+            }
+        }
+
+        Behavior rules:
+            - Each step must move the plan forward; no rephrasing.
+            - Keep thought concise but non-trivial.
+            - If the user request contains an error from another system, add a comment to the issue describing the error and the agent using MCP tool call add_issue_comment.
+            - Available transitions: backlog, develop, review, test, staging, done.
+
+        Return ONLY the JSON object:
+        {"thought":"...","done":false}
         """;
+
     private static final String ISSUE_OPERATION_USER_PROMPT_TEMPLATE = """
         Previous thought: %s
         
@@ -58,7 +84,7 @@ public class GenericController {
             name = "issue_operation",
             description = """
                 Execute an operation on an issue by id.
-                Operations: show/summary, status, comment, assign, transition(close/done/open/in-progress).
+                Operations: show/summary, status, comment, assign, transition(backlog/develop/review/test/staging/done).
                 Input: issueId + a natural-language request describing the operation.
                 Output: the result of the operation (or an error message).
                 """

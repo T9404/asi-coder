@@ -1,15 +1,12 @@
 spring:
   application:
-    name: project-manager-client
-  threads:
-    virtual:
-      enabled: true
+    name: coordinator
   ai:
     openai:
       api-key: ${OPENAI_API_KEY}
       chat:
         options:
-          model: gpt-4o
+          model: gpt-5
           temperature: 1
     mcp:
       client:
@@ -18,17 +15,20 @@ spring:
         type: sync
         sse:
           connections:
-            youtrack-mcp-server:
-              url: ${YOUTRACK_MCP_SERVER_URL:http://localhost:8082}
+            project-manager-agent:
+              url: ${PM_MCP_SERVER_URL:http://localhost:9091}
+              sse-endpoint: /api/v1/sse
+            documentation-agent:
+              url: ${DOCUMENTATION_AGENT_MCP_SERVER_URL:http://localhost:9095}
               sse-endpoint: /api/v1/sse
       server:
-        name: project-manager-server
-        instructions: Manage Confluence content on the local instance. Always send storage-format HTML in bodies.
+        name: coordinator
+        instructions: Coordinate between various MCP servers to fulfill requests efficiently.
         sse-endpoint: /api/v1/sse
         sse-message-endpoint: /api/v1/mcp/message
 
 server:
-  port: ${SERVER_PORT:9091}
+  port: ${SERVER_PORT:9099}
 
 logging:
   level:
@@ -45,4 +45,4 @@ management:
       show-details: always
   metrics:
     tags:
-      application: project-manager-client
+      application: coordinator

@@ -34,8 +34,8 @@ public class AppConfig {
     @ConditionalOnProperty(prefix = "spring.ai.mcp.client", name = "enabled", havingValue = "true", matchIfMissing = true)
     public McpSyncClient mcpClient(
             @Value("${spring.ai.mcp.client.request-timeout:30s}") Duration requestTimeout,
-            @Value("${spring.ai.mcp.client.sse.connections.yourack-mcp-server.url}") String baseUrl,
-            @Value("${spring.ai.mcp.client.sse.connections.yourack-mcp-server.sse-endpoint:/sse}") String sseEndpoint
+            @Value("${spring.ai.mcp.client.sse.connections.youtrack-mcp-server.url}") String baseUrl,
+            @Value("${spring.ai.mcp.client.sse.connections.youtrack-mcp-server.sse-endpoint:/sse}") String sseEndpoint
     ) {
         McpClientTransport transport = HttpClientSseClientTransport.builder(baseUrl)
                 .sseEndpoint(sseEndpoint)

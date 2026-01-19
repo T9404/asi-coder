@@ -37,7 +37,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "bfajla9nj5mgwc"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -147,7 +147,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "bfajla9nj5mgwc"
+        "uid": "prometheus"
       },
       "fieldConfig": {
         "defaults": {
@@ -232,7 +232,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "bfajla9nj5mgwc"
+            "uid": "prometheus"
           },
           "editorMode": "code",
           "expr": "sum(rate(gen_ai_client_operation_seconds_count{application=\"$service\"}[5m])) by (error)",

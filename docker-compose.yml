@@ -141,6 +141,28 @@ services:
     networks:
       - asi
 
+  coordinator:
+    container_name: coordinator
+    build:
+      dockerfile: Dockerfile
+      context: ./coordinator
+      network: host
+    environment:
+      - PM_MCP_SERVER_URL=http://project-manager-client:9091
+      - DOCUMENTATION_AGENT_MCP_SERVER_URL=http://documentation-agent-client:9095
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SERVER_PORT=9099
+    restart: always
+    ports:
+      - "9099:9099"
+    depends_on:
+      - youtrack-mcp-server
+      - project-manager-client
+      - confluence-mcp-server
+      - documentation-agent-client
+    networks:
+      - asi
+
   youtrack-mcp-server:
     container_name: youtrack-mcp-server
     build:
@@ -167,6 +189,19 @@ services:
     restart: always
     ports:
       - "8086:8086"
+    networks:
+      - asi
+
+  telegram-mcp:
+    image: oswaldslabbert/telegram-mcp:latest
+    container_name: telegram-mcp
+    environment:
+      TELEGRAM_API_ID: ${TELEGRAM_API_ID}
+      TELEGRAM_API_HASH: ${TELEGRAM_API_HASH}
+      TELEGRAM_SESSION_STRING: ${TELEGRAM_SESSION_STRING}
+    restart: always
+    ports:
+      - "7090:7090"
     networks:
       - asi
 

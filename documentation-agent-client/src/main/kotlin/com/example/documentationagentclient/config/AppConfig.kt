@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Primary
 import java.time.Duration
 
 @Configuration
@@ -34,6 +35,7 @@ class AppConfig {
             .build()
     }
 
+    @Primary
     @Bean
     @ConditionalOnProperty(
         prefix = "spring.ai.mcp.client",
@@ -41,10 +43,34 @@ class AppConfig {
         havingValue = "true",
         matchIfMissing = true
     )
-    fun mcpClient(
+    fun confluenceMcpClient(
         @Value("\${spring.ai.mcp.client.request-timeout:30s}") requestTimeout: Duration?,
         @Value("\${spring.ai.mcp.client.sse.connections.confluence-mcp-server.url}") baseUrl: String?,
         @Value("\${spring.ai.mcp.client.sse.connections.confluence-mcp-server.sse-endpoint:/sse}") sseEndpoint: String?
+    ): McpSyncClient {
+        val transport: McpClientTransport = HttpClientSseClientTransport.builder(baseUrl)
+            .sseEndpoint(sseEndpoint)
+            .build()
+
+        val client = McpClient.sync(transport)
+            .requestTimeout(requestTimeout)
+            .build()
+
+        client.initialize()
+        return client
+    }
+
+    @Bean
+    @ConditionalOnProperty(
+        prefix = "spring.ai.mcp.client",
+        name = ["enabled"],
+        havingValue = "true",
+        matchIfMissing = true
+    )
+    fun projectManagerMcpClient(
+        @Value("\${spring.ai.mcp.client.request-timeout:30s}") requestTimeout: Duration?,
+        @Value("\${spring.ai.mcp.client.sse.connections.project-manager-agent.url}") baseUrl: String?,
+        @Value("\${spring.ai.mcp.client.sse.connections.project-manager-agent.sse-endpoint:/sse}") sseEndpoint: String?
     ): McpSyncClient {
         val transport: McpClientTransport = HttpClientSseClientTransport.builder(baseUrl)
             .sseEndpoint(sseEndpoint)

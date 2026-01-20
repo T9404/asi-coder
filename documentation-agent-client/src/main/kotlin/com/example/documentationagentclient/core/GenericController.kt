@@ -1,9 +1,9 @@
 package com.example.documentationagentclient.core
 
-import io.modelcontextprotocol.client.McpSyncClient
 import org.springframework.ai.image.ImagePrompt
 import org.springframework.ai.image.ImageResponse
 import org.springframework.ai.openai.OpenAiImageModel
+import org.springframework.ai.openai.OpenAiImageOptions
 import org.springframework.ai.tool.annotation.Tool
 import org.springframework.ai.tool.annotation.ToolParam
 import org.springframework.stereotype.Component
@@ -13,33 +13,58 @@ import org.springframework.stereotype.Component
 class GenericController(
     private val confluenceSaveService: ConfluenceSaveService,
     private val openaiImageModel: OpenAiImageModel,
-    private val projectManagerMcpClient : McpSyncClient
+    private val pmNotifier: ProjectManagerNotifier,
 ) {
 
-    @Tool(name = "generic_tool", description = "A generic tool for demonstration purposes")
-    fun genericTool(@ToolParam(required = true, description = "Input parameter") input: String): String {
-        return "Processed input: $input"
-    }
-
-    @Tool(name = "generate_image", description = "Generates an image based on the provided description")
-    fun generateImage(
+    @Tool(name = "generate_documentation", description = "Generates documentation image from description and saves it to Confluence")
+    fun generateDocumentation(
         @ToolParam(required = true, description = "Issue identifier") issueId: String,
         @ToolParam(required = true, description = "Description of the image to generate") description: String
     ): ImageResponse? {
         try {
             log.info("Generating image with description")
 
-            val response: ImageResponse = openaiImageModel.call(
-                ImagePrompt(
-                    """
-            Generate ONE UML CLASS DIAGRAM image from the provided source code snippet(s), regardless of programming language (Java, Kotlin, TypeScript, React, etc.).
-            GOAL:
-            - Visualize the static structure that is explicitly present in the snippet: types and their relationships.
-            - Produce a diagram that is correct for the snippet, not “complete” for a whole project.
+            val prompt = """
+                Generate EXACTLY ONE UML CLASS DIAGRAM image.
 
-            STRICT ANTI-HALLUCINATION RULE:
-            - DO NOT invent missing types or relationships.
+                PRIMARY GOAL:
+                    - Reproduce the classes/interfaces/enums and their names EXACTLY as they appear in INPUT.
+                    - Reproduce fields and methods EXACTLY as they appear in INPUT (names, visibility, parameters, return types when present).
+                    - Draw ONLY relationships that are explicitly present in INPUT (extends/implements, composition/aggregation markers, associations, dependencies).
+
+                STYLE: PLANTUML-LIKE (MANDATORY)
+                    - Black lines only, white background. No colors, no gradients, no shadows, no icons, no decorative elements.
+                    - Classic UML class boxes with 3 compartments: Name / Attributes / Methods.
+                    - Use PlantUML conventions for notation:
+                    - Class header: ClassName (or <<interface>> InterfaceName, <<enum>> EnumName when explicit).
+                    - Attributes: +public, -private, #protected visibility markers when visibility is explicit; otherwise omit marker.
+                    - Methods: methodName(paramName: Type): ReturnType when types are explicit; otherwise keep only methodName(...) exactly as shown.
+                    - Straight connectors, no curves, no 3D, no perspective.
+                    - High contrast, sharp readable text. Keep layout compact but readable.
+
+                STRICT ANTI-HALLUCINATION (HARD RULES)
+                    - DO NOT invent any class/interface/enum names.
+                    - DO NOT invent members (fields/methods) that are not explicitly present.
+                    - DO NOT infer relationships from naming or typical architecture. If not explicit, omit.
+                    - If INPUT is incomplete/ambiguous, leave the missing parts out rather than guessing.
+
+                OUTPUT CONSTRAINTS
+                    - Output must be a SINGLE IMAGE containing ONE diagram.
+                    - No extra commentary, no captions, no legends, no additional text outside the diagram.
+
+                INPUT (verbatim, authoritative):
+                $description
             """.trimIndent()
+
+            val response = openaiImageModel.call(
+                ImagePrompt(
+                    prompt,
+                    OpenAiImageOptions.builder()
+                        .quality("hd")
+                        .width(1024)
+                        .height(1024)
+                        .N(1)
+                        .build()
                 )
             )
 
@@ -48,7 +73,7 @@ class GenericController(
             return response
         } catch (e: Exception) {
             log.warn("Error during generating image $issueId", e)
-            //projectManagerMcpClient.callTool()
+            pmNotifier.notify(issueId, e.message ?: "Unknown error")
             return null
         }
     }

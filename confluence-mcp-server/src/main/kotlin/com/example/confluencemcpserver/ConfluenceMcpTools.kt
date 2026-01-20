@@ -61,9 +61,4 @@ class ConfluenceMcpTools(
         return ConfluenceActionResult.fromContent(updated, properties)
     }
 
-//    @Tool(name = "confluence_delete_comment", description = "Delete a comment by id.")
-//    fun deleteComment(@ToolParam(required = true, description = "CommentId") commentId: String): String {
-//        client.deleteComment(commentId)
-//        return "Comment $commentId deleted"
-//    }
 }

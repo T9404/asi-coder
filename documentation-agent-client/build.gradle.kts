@@ -27,6 +27,7 @@ dependencies {
     implementation("org.springframework.ai:spring-ai-starter-mcp-server")
     implementation("org.springframework.ai:spring-ai-starter-mcp-server-webmvc")
     implementation("org.springframework.ai:spring-ai-starter-model-openai")
+    implementation("org.springframework.boot:spring-boot-starter-reactor-netty")
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     testImplementation("org.springframework.boot:spring-boot-starter-test")

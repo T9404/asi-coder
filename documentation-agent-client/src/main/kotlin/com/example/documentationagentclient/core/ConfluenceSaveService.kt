@@ -1,6 +1,5 @@
 package com.example.documentationagentclient.core
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.ai.chat.client.ChatClient
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.scheduling.annotation.Async
@@ -8,8 +7,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class ConfluenceSaveService(
-    private val chatClient: ObjectProvider<ChatClient>,
-    private val objectMapper: ObjectMapper
+    private val chatClient: ObjectProvider<ChatClient>
 ) {
 
     @Async("confluenceExecutor")
@@ -29,24 +27,7 @@ class ConfluenceSaveService(
         """.trimIndent()
 
         val response = chat.prompt()
-            .system(
-                """
-        You are a deterministic Confluence saver.
-
-        Goal: ensure exactly one page exists with title exactly equal to TITLE in SPACE_KEY.
-
-        Rules:
-        1) First call confluence_search_pages with:
-           - spaceKey = SPACE_KEY
-           - titleKeyword = TITLE
-        2) Inspect results. If there is a page whose title equals TITLE exactly:
-           - call confluence_update_page with that pageId, title=TITLE, contentHtml=CONTENT_HTML
-        3) Otherwise:
-           - call confluence_create_page with spaceKey=SPACE_KEY, title=TITLE, contentHtml=CONTENT_HTML
-        4) Never create pages with suffixes like "(2)" or modified titles.
-        5) Call tools only. No normal text output.
-        """.trimIndent()
-            )
+            .system(SYSTEM_PROMPT)
             .user(
                 """
         SPACE_KEY: $spaceKey
@@ -58,42 +39,6 @@ class ConfluenceSaveService(
             .call()
 
         log.info("save-to-confluence final response: {}", response.content())
-
-//        val searchText = chat.prompt()
-//            .system("""Call exactly one tool: confluence_search_pages. Do not output normal text.""")
-//            .user("""spaceKey="$spaceKey"\ntitleKeyword="$title"""")
-//            .call()
-//            .content()
-//
-//        val pageId = selectExactPageId(searchText, title)
-//
-//        if (pageId == null) {
-//            chat.prompt()
-//                .system("""Call exactly one tool: confluence_create_page. Do not output normal text.""")
-//                .user("""spaceKey="$spaceKey"\ntitle="$title"\ncontentHtml=$contentHtml""")
-//                .call()
-//        } else {
-//            chat.prompt()
-//                .system("""Call exactly one tool: confluence_update_page. Do not output normal text.""")
-//                .user("""pageId="$pageId"\ntitle="$title"\ncontentHtml=$contentHtml""")
-//                .call()
-//        }
-    }
-
-    private fun selectExactPageId(searchJson: String?, exactTitle: String): String? {
-        if (searchJson.isNullOrBlank()) return null
-        val node = objectMapper.readTree(searchJson)
-        val results = when {
-            node.has("results") && node["results"].isArray -> node["results"]
-            node.isArray -> node
-            else -> return null
-        }
-        for (item in results) {
-            val title = item["title"]?.asText()
-            val id = item["id"]?.asText()
-            if (id != null && title == exactTitle) return id
-        }
-        return null
     }
 
     fun escapeXmlAttr(s: String): String =
@@ -110,5 +55,22 @@ class ConfluenceSaveService(
 
     companion object {
         private val log = org.slf4j.LoggerFactory.getLogger(ConfluenceSaveService::class.java)
+        private val SYSTEM_PROMPT = """
+        You are a deterministic Confluence saver.
+
+        Goal: ensure exactly one page exists with title exactly equal to TITLE in SPACE_KEY.
+
+        Rules:
+        1) First call confluence_search_pages with:
+           - spaceKey = SPACE_KEY
+           - titleKeyword = TITLE
+        2) Inspect results. If there is a page whose title equals TITLE exactly:
+           - call confluence_update_page with that pageId, title=TITLE, contentHtml=CONTENT_HTML
+        3) Otherwise:
+           - call confluence_create_page with spaceKey=SPACE_KEY, title=TITLE, contentHtml=CONTENT_HTML
+        4) Never create pages with suffixes like "(2)" or modified titles.
+        5) Call tools only. No normal text output.
+        """.trimIndent()
     }
+
 }

@@ -83,6 +83,11 @@ services:
     restart: always
     ports:
       - "5433:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${CONFLUENCE_DB_USER:-confluence} -d ${CONFLUENCE_DB_NAME:-confluence}" ]
+      interval: 5s
+      timeout: 3s
+      retries: 30
     networks:
       - asi
 
@@ -113,6 +118,7 @@ services:
       network: host
     environment:
       - CONFLUENCE_MCP_SERVER_URL=http://confluence-mcp-server:8084
+      - PM_MCP_SERVER_URL=http://project-manager-client:9091
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - SERVER_PORT=9095
     restart: always

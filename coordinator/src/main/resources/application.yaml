@@ -10,9 +10,9 @@ spring:
           temperature: 1
     mcp:
       client:
-        name: project-manager-client
+        name: coordinator
         request-timeout: 30s
-        type: sync
+        type: async
         sse:
           connections:
             project-manager-agent:

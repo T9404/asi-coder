@@ -20,4 +20,14 @@ class AsyncConfig {
             initialize()
         }
 
+    @Bean("projectManagerExecutor")
+    fun projectManagerExecutor(): Executor =
+        ThreadPoolTaskExecutor().apply {
+            corePoolSize = 2
+            maxPoolSize = 10
+            setQueueCapacity(100)
+            setThreadNamePrefix("project-manager-")
+            initialize()
+        }
+
 }

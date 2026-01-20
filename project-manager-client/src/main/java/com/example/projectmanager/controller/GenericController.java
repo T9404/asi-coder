@@ -159,7 +159,7 @@ public class GenericController {
 
     private boolean isInvalidStep(ReasoningStep step, Set<String> seenThoughts) {
         if (step == null) {
-            log.warn("Step rejected: step is null");
+            log.warn("Step rejected: step is null, probably due to parsing error");
             return true;
         }
 

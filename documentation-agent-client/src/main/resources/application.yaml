@@ -1,4 +1,7 @@
 spring:
+  http:
+    client:
+      factory: reactor
   application:
     name: documentation-agent-client
   ai:
@@ -19,6 +22,9 @@ spring:
           connections:
             confluence-mcp-server:
               url: ${CONFLUENCE_MCP_SERVER_URL:http://localhost:8084}
+              sse-endpoint: /api/v1/sse
+            project-manager-agent:
+              url: ${PM_MCP_SERVER_URL:http://localhost:9091}
               sse-endpoint: /api/v1/sse
       server:
         enabled: true

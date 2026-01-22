@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class GenericController {
-    private static final int MAX_REASONING_STEPS = 10;
+    private static final int MAX_REASONING_STEPS = 5;
     private static final int MIN_THOUGHT_WORDS = 15;
     private static final String ISSUE_OPERATION_SYSTEM_PROMPT = """
         You are iteratively reasoning before executing an issue operation.

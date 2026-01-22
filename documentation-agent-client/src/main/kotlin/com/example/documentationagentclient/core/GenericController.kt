@@ -61,8 +61,8 @@ class GenericController(
                     prompt,
                     OpenAiImageOptions.builder()
                         .quality("hd")
-                        .width(1024)
-                        .height(1024)
+                        .width(128)
+                        .height(128)
                         .N(1)
                         .build()
                 )

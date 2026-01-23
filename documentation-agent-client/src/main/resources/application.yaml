@@ -11,7 +11,7 @@ spring:
       api-key: ${OPENAI_API_KEY}
       chat:
         options:
-          model: gpt-5-mini
+          model: gpt-5.2
           temperature: 1
     mcp:
       client:
